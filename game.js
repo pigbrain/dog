@@ -27,18 +27,40 @@ function startGame() {
     // 데스크톱 이벤트
     if (!('ontouchstart' in window)) {
         gameArea.addEventListener('mousemove', handleGrooming);
+    } else {
+        // 모바일 터치 이벤트
+        gameArea.addEventListener('touchstart', handleTouchStart, { passive: false });
+        gameArea.addEventListener('touchmove', handleTouchMove, { passive: false });
+        gameArea.addEventListener('touchend', handleTouchEnd, { passive: false });
     }
-    
-    // 터치 이벤트
-    gameArea.addEventListener('touchmove', handleTouchGrooming, { passive: false });
-    gameArea.addEventListener('touchstart', handleTouchGrooming, { passive: false });
 }
 
 // 마지막 터치/마우스 이벤트 시간을 저장
 let lastEventTime = 0;
 const EVENT_THROTTLE = 16; // 약 60fps
 
-function handleTouchGrooming(event) {
+let isDragging = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
+
+function handleTouchStart(event) {
+    event.preventDefault();
+    isDragging = true;
+    
+    const touch = event.touches[0];
+    const furContainer = document.getElementById('fur-container');
+    const rect = furContainer.getBoundingClientRect();
+    
+    lastTouchX = touch.clientX - rect.left;
+    lastTouchY = touch.clientY - rect.top;
+    
+    // 터치 시작 지점의 털 제거
+    const touchRadius = Math.min(rect.width, rect.height) * 0.1;
+    removeFursAtPosition(lastTouchX, lastTouchY, touchRadius);
+}
+
+function handleTouchMove(event) {
+    if (!isDragging) return;
     event.preventDefault();
     
     // 이벤트 쓰로틀링
@@ -48,18 +70,30 @@ function handleTouchGrooming(event) {
     }
     lastEventTime = now;
     
+    const touch = event.touches[0];
     const furContainer = document.getElementById('fur-container');
     const rect = furContainer.getBoundingClientRect();
     
-    // 모든 터치 포인트에 대해 처리
-    for (let touch of event.touches) {
-        const touchX = touch.clientX - rect.left;
-        const touchY = touch.clientY - rect.top;
-        
-        // 화면 크기에 맞게 터치 영역 조정
-        const touchRadius = Math.min(rect.width, rect.height) * 0.1;
-        removeFursAtPosition(touchX, touchY, touchRadius);
+    const currentX = touch.clientX - rect.left;
+    const currentY = touch.clientY - rect.top;
+    
+    // 이전 위치와 현재 위치 사이의 중간 지점들에도 털 제거 적용
+    const steps = 5; // 부드러운 드래그를 위한 중간 단계 수
+    const touchRadius = Math.min(rect.width, rect.height) * 0.1;
+    
+    for (let i = 0; i <= steps; i++) {
+        const ratio = i / steps;
+        const x = lastTouchX + (currentX - lastTouchX) * ratio;
+        const y = lastTouchY + (currentY - lastTouchY) * ratio;
+        removeFursAtPosition(x, y, touchRadius);
     }
+    
+    lastTouchX = currentX;
+    lastTouchY = currentY;
+}
+
+function handleTouchEnd(event) {
+    isDragging = false;
 }
 
 function handleGrooming(event) {
