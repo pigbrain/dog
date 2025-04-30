@@ -19,15 +19,85 @@ function startGame() {
     gameStartTime = Date.now();
     updateScore();
     
-    // 털 생성 간격 설정
     createFurInterval();
-    
-    // 속도 증가 타이머 설정 (1초마다 속도 증가)
     setInterval(increaseSpeed, 1000);
     
-    // 마우스 이벤트 리스너 추가
     const gameArea = document.getElementById('game-area');
-    gameArea.addEventListener('mousemove', handleGrooming);
+    
+    // 데스크톱 이벤트
+    if (!('ontouchstart' in window)) {
+        gameArea.addEventListener('mousemove', handleGrooming);
+    }
+    
+    // 터치 이벤트
+    gameArea.addEventListener('touchmove', handleTouchGrooming, { passive: false });
+    gameArea.addEventListener('touchstart', handleTouchGrooming, { passive: false });
+}
+
+// 마지막 터치/마우스 이벤트 시간을 저장
+let lastEventTime = 0;
+const EVENT_THROTTLE = 16; // 약 60fps
+
+function handleTouchGrooming(event) {
+    event.preventDefault();
+    
+    // 이벤트 쓰로틀링
+    const now = Date.now();
+    if (now - lastEventTime < EVENT_THROTTLE) {
+        return;
+    }
+    lastEventTime = now;
+    
+    const furContainer = document.getElementById('fur-container');
+    const rect = furContainer.getBoundingClientRect();
+    
+    // 모든 터치 포인트에 대해 처리
+    for (let touch of event.touches) {
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+        
+        // 화면 크기에 맞게 터치 영역 조정
+        const touchRadius = Math.min(rect.width, rect.height) * 0.1;
+        removeFursAtPosition(touchX, touchY, touchRadius);
+    }
+}
+
+function handleGrooming(event) {
+    // 이벤트 쓰로틀링
+    const now = Date.now();
+    if (now - lastEventTime < EVENT_THROTTLE) {
+        return;
+    }
+    lastEventTime = now;
+    
+    const furContainer = document.getElementById('fur-container');
+    const rect = furContainer.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    // 데스크톱은 더 작은 반경 사용
+    const radius = Math.min(rect.width, rect.height) * 0.05;
+    removeFursAtPosition(mouseX, mouseY, radius);
+}
+
+function removeFursAtPosition(x, y, radius) {
+    const furElements = document.getElementsByClassName('fur');
+    
+    Array.from(furElements).forEach(fur => {
+        const furX = parseInt(fur.style.left);
+        const furY = parseInt(fur.style.top);
+        
+        const distance = Math.sqrt(
+            Math.pow(x - furX, 2) + 
+            Math.pow(y - furY, 2)
+        );
+        
+        if (distance < radius) {
+            fur.remove();
+            furCount++;
+            updateScore();
+        }
+    });
 }
 
 function createFurInterval() {
@@ -60,30 +130,6 @@ function growFur() {
     fur.style.transform = `rotate(${Math.random() * 360}deg)`;
     
     furContainer.appendChild(fur);
-}
-
-function handleGrooming(event) {
-    const furElements = document.getElementsByClassName('fur');
-    const furContainer = document.getElementById('fur-container');
-    const rect = furContainer.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-    
-    Array.from(furElements).forEach(fur => {
-        const furX = parseInt(fur.style.left);
-        const furY = parseInt(fur.style.top);
-        
-        const distance = Math.sqrt(
-            Math.pow(mouseX - furX, 2) + 
-            Math.pow(mouseY - furY, 2)
-        );
-        
-        if (distance < 20) {
-            fur.remove();
-            furCount++;
-            updateScore();
-        }
-    });
 }
 
 function updateScore() {

@@ -2,14 +2,19 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강아지 얼굴에 미세먼지를 제거해주세요</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>강아지 미용실</title>
     <style>
         body {
             margin: 0;
             padding: 20px;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            overscroll-behavior: none;
         }
         
         #selection-screen {
@@ -20,7 +25,9 @@
         
         #game-screen {
             display: none;
-            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
         }
         
         .dog-selection {
@@ -35,10 +42,16 @@
             border: 2px solid #ccc;
             border-radius: 10px;
             transition: transform 0.2s;
+            flex: 0 1 auto;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .dog-option:hover {
             transform: scale(1.1);
+        }
+        
+        .dog-option:active {
+            transform: scale(0.95);
         }
         
         .dog-image {
@@ -49,13 +62,16 @@
             -webkit-user-select: none;
             -webkit-user-drag: none;
             pointer-events: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         #score {
             text-align: center;
-            padding: 20px;
-            font-size: 24px;
-            font-weight: bold;
+            padding: 15px;
+            margin-top: 15px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         #game-area {
@@ -97,6 +113,41 @@
             width: 5px;
             height: 15px;
             border-radius: 2px;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .dog-selection {
+                gap: 10px;
+            }
+
+            .dog-image {
+                width: 120px;
+                height: 120px;
+            }
+
+            h1 {
+                font-size: 24px;
+                text-align: center;
+                margin: 10px 0;
+            }
+
+            h3 {
+                font-size: 16px;
+                margin: 8px 0;
+            }
+
+            #score {
+                font-size: 18px;
+                padding: 10px;
+            }
+            
+            .dog-option {
+                padding: 8px;
+            }
         }
     </style>
 </head>
