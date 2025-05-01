@@ -3,6 +3,10 @@ let selectedDog = null;
 let furGrowthInterval;
 let growthSpeed = 1000; // 초기 생성 속도 (1초)
 let gameStartTime;
+let isDragging = false;
+let lastTouchX = 0;
+let lastTouchY = 0;
+let isGameOver = false;
 
 function selectDog(dogNumber) {
     selectedDog = dogNumber;
@@ -38,10 +42,6 @@ function startGame() {
 // 마지막 터치/마우스 이벤트 시간을 저장
 let lastEventTime = 0;
 const EVENT_THROTTLE = 16; // 약 60fps
-
-let isDragging = false;
-let lastTouchX = 0;
-let lastTouchY = 0;
 
 function handleTouchStart(event) {
     event.preventDefault();
@@ -150,22 +150,55 @@ function increaseSpeed() {
 }
 
 function growFur() {
+    if (isGameOver) return;
+    
     const furContainer = document.getElementById('fur-container');
     const containerRect = furContainer.getBoundingClientRect();
     const fur = document.createElement('div');
     fur.className = 'fur';
     
-    // 랜덤 위치에 털 생성 (컨테이너 크기 기준)
-    const x = Math.random() * (containerRect.width - 10);  // 털의 너비를 고려
-    const y = Math.random() * (containerRect.height - 20); // 털의 높이를 고려
+    // 랜덤 위치에 털 생성
+    const x = Math.random() * (containerRect.width - 10);
+    const y = Math.random() * (containerRect.height - 20);
     
     fur.style.left = `${x}px`;
     fur.style.top = `${y}px`;
     fur.style.transform = `rotate(${Math.random() * 360}deg)`;
     
     furContainer.appendChild(fur);
+    
+    // 털이 50개 이상이면 게임 오버
+    if (furContainer.children.length >= 50) {
+        showGameOver();
+    }
 }
 
 function updateScore() {
     document.getElementById('fur-count').textContent = furCount;
+}
+
+function showGameOver() {
+    isGameOver = true;
+    clearInterval(furGrowthInterval);
+    
+    document.getElementById('final-score').textContent = furCount;
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('game-over-popup').style.display = 'block';
+}
+
+function restartGame() {
+    isGameOver = false;
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('game-over-popup').style.display = 'none';
+    
+    // 게임 화면 숨기기
+    document.getElementById('game-screen').style.display = 'none';
+    // 선택 화면 보이기
+    document.getElementById('selection-screen').style.display = 'flex';
+    
+    // 기존 털 제거
+    const furContainer = document.getElementById('fur-container');
+    while (furContainer.firstChild) {
+        furContainer.removeChild(furContainer.firstChild);
+    }
 }
