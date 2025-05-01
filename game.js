@@ -1,7 +1,7 @@
 let furCount = 0;
 let selectedDog = null;
 let furGrowthInterval;
-let growthSpeed = 1000; // 초기 생성 속도 (1초)
+let growthSpeed = 700; // 초기 생성 속도 (0.7초)
 let gameStartTime;
 let isDragging = false;
 let lastTouchX = 0;
@@ -19,12 +19,12 @@ function selectDog(dogNumber) {
 
 function startGame() {
     furCount = 0;
-    growthSpeed = 1000;
+    growthSpeed = 700;
     gameStartTime = Date.now();
     updateScore();
     
     createFurInterval();
-    setInterval(increaseSpeed, 1000);
+    setInterval(increaseSpeed, 700);
     
     const gameArea = document.getElementById('game-area');
     
@@ -142,9 +142,9 @@ function createFurInterval() {
 }
 
 function increaseSpeed() {
-    // 최소 100ms까지 속도 증가
-    if (growthSpeed > 100) {
-        growthSpeed = Math.max(100, growthSpeed - 100);
+    // 최소 10ms까지 속도 증가
+    if (growthSpeed > 60) {
+        growthSpeed = Math.max(60, growthSpeed - 60);
         createFurInterval();
     }
 }
@@ -167,8 +167,8 @@ function growFur() {
     
     furContainer.appendChild(fur);
     
-    // 털이 50개 이상이면 게임 오버
-    if (furContainer.children.length >= 50) {
+    // 털이 30개 이상이면 게임 오버
+    if (furContainer.children.length >= 30) {
         showGameOver();
     }
 }
